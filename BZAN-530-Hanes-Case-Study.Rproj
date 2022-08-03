@@ -11,32 +11,3 @@ Encoding: UTF-8
 
 RnwWeave: Sweave
 LaTeX: pdfLaTeX
-
-
-library(readxl)
-library(tidyverse)
-BLOCKGROUP <- read_excel("UT_blockgroup_data.xlsx")
-
-#Subset BLOCKGROUP into channels                       
-channel26 <- BLOCKGROUP[ ,c(1,27,grep("channel26",colnames(BLOCKGROUP)),33)] 
-channel41 <- BLOCKGROUP[ ,c(1,27,grep("channel41",colnames(BLOCKGROUP)),33)]
-channel45 <- BLOCKGROUP[ ,c(1,27,grep("channel45",colnames(BLOCKGROUP)),33)]
-channel46 <- BLOCKGROUP[ ,c(1,27,grep("channel46",colnames(BLOCKGROUP)),33)]
-
-#Obtain total sales for each DMA per channel
-dma_26 <- aggregate(channel26_sales_d~dma, data = channel26, FUN = sum)                       
-dma_41 <- aggregate(channel41_sales_d~dma, data = channel41, FUN = sum)
-dma_45 <- aggregate(channel45_sales_d~dma, data = channel45, FUN = sum)
-dma_46 <- aggregate(channel46_sales_d~dma, data = channel46, FUN = sum)
-
-#Join DMA sales data frames to calculate total overall sales 
-df_list <- list(dma_26,dma_41,dma_45,dma_46)
-sales_agg <- df_list %>% reduce(full_join,by = "dma")
-
-#For loop so sum up sales for each row 
-for( i in 1:nrow(sales_agg)){
-sales_agg$total_sales[i] <- sum(sales_agg[i,2:5])
-}
-
-#The top 5 performing DMAs in terms of total sales
-sales_agg[order(sales_agg$total_sales,decreasing=TRUE)[1:5],c(1,6)]
